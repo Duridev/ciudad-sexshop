@@ -1,0 +1,33 @@
+---
+// index.astro
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import CategoryGrid from '../components/CategoryGrid.astro';
+import BestSellers from '../components/BestSellers.astro';
+import BlogSection from '../components/BlogSection.astro';
+import TrustBadges from '../components/TrustBadges.astro';
+import { getProducts } from '../lib/woocommerce';
+
+// Fetch live products from WooCommerce Store API
+const products = await getProducts({ per_page: 8 });
+---
+
+<Layout 
+  title="Ciudad Sex Shop | Placer, Lencería y Bienestar Íntimo en Chile"
+  description="Tienda online oficial Ciudad Sex Shop. Descubre juguetes eróticos, lencería de lujo, feromonas y bienestar íntimo con despacho 100% discreto a todo Chile."
+>
+  <!-- Hero Section -->
+  <Hero />
+
+  <!-- Categories Grid matching reference design -->
+  <CategoryGrid />
+
+  <!-- Best Sellers Grid with WooCommerce Live API Data -->
+  <BestSellers products={products} />
+
+  <!-- Educational Blog Section matching reference mockup -->
+  <BlogSection />
+
+  <!-- Trust, Discreteness & Guarantees Badges -->
+  <TrustBadges />
+</Layout>

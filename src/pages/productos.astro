@@ -1,0 +1,160 @@
+---
+// productos.astro
+import Layout from '../layouts/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import TrustBadges from '../components/TrustBadges.astro';
+import { getAllProducts, getOfficialCategories } from '../lib/woocommerce';
+
+// Fetch all products from WooCommerce Store API
+const products = await getAllProducts();
+const categories = getOfficialCategories();
+---
+
+<Layout 
+  title="Todos los Productos | Ciudad Sex Shop Chile"
+  description="Explora el catálogo completo de Ciudad Sex Shop: vibradores, dildos, lencería, lubricantes, feromonas y accesorios. Envíos 100% discretos a todo Chile."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-xs text-purple-300/70 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-white transition-colors">Inicio</a>
+      <span>/</span>
+      <span class="text-gray-300">Todos los Productos</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-purple-900/40">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-500/30 text-pink-300 text-xs font-semibold mb-3">
+          <span>✨ Catálogo Oficial</span>
+          <span>•</span>
+          <span>{products.length} productos disponibles</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          Todos los Productos
+        </h1>
+        <p class="text-sm sm:text-base text-purple-200/70 font-light mt-2 max-w-xl">
+          Descubre nuestra selección integral de artículos para tu satisfacción sexual, placer y bienestar con empaque 100% confidencial.
+        </p>
+      </div>
+
+      <!-- Controls: In-page filter & counter -->
+      <div class="flex items-center gap-3">
+        <label for="catalog-sort" class="text-xs text-purple-300 font-medium">Ordenar por:</label>
+        <select 
+          id="catalog-sort" 
+          class="bg-[#171239] border border-purple-500/30 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+        >
+          <option value="default">Por defecto</option>
+          <option value="price-asc">Precio: Menor a Mayor</option>
+          <option value="price-desc">Precio: Mayor a Menor</option>
+          <option value="name-asc">Nombre: A - Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Category Pills Filter Bar -->
+    <div class="mb-10">
+      <div class="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
+        <a 
+          href="/productos"
+          class="px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-600/20"
+        >
+          Todos ({products.length})
+        </a>
+        {categories.map((cat) => (
+          <a 
+            href={`/categoria/${cat.slug}`}
+            class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap bg-[#17133a] hover:bg-purple-900/50 border border-purple-500/20 hover:border-pink-500/40 text-purple-200 hover:text-white transition-all"
+          >
+            {cat.name} {cat.count ? `(${cat.count})` : ''}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Live Filter Input for the Grid -->
+    <div class="mb-8 relative max-w-md">
+      <input 
+        type="text" 
+        id="grid-filter-input" 
+        placeholder="Filtrar productos en esta página..." 
+        class="w-full bg-[#141032] border border-purple-500/30 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-purple-300/40 focus:outline-none focus:border-pink-500"
+      />
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </span>
+    </div>
+
+    <!-- Products Grid -->
+    <div id="catalog-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {products.map((product) => (
+        <div class="product-item-wrapper" data-name={product.name.toLowerCase()} data-price={product.prices.price}>
+          <ProductCard product={product} />
+        </div>
+      ))}
+    </div>
+
+    <div id="no-grid-results" class="hidden py-16 text-center">
+      <span class="text-4xl block mb-3">🔍</span>
+      <h3 class="text-lg font-bold text-white">No se encontraron productos</h3>
+      <p class="text-xs text-purple-300/60 mt-1">Intenta con otro término de búsqueda.</p>
+    </div>
+
+  </div>
+
+  <TrustBadges />
+</Layout>
+
+<script>
+  // Filter products in the grid via the input
+  const filterInput = document.getElementById('grid-filter-input') as HTMLInputElement;
+  const items = document.querySelectorAll('.product-item-wrapper');
+  const noResults = document.getElementById('no-grid-results');
+  const sortSelect = document.getElementById('catalog-sort') as HTMLSelectElement;
+  const gridContainer = document.getElementById('catalog-products-grid');
+
+  function applyFilter() {
+    const val = filterInput?.value.toLowerCase().trim() || '';
+    let visibleCount = 0;
+
+    items.forEach((el) => {
+      const name = el.getAttribute('data-name') || '';
+      if (name.includes(val)) {
+        (el as HTMLElement).style.display = '';
+        visibleCount++;
+      } else {
+        (el as HTMLElement).style.display = 'none';
+      }
+    });
+
+    if (noResults) {
+      noResults.classList.toggle('hidden', visibleCount > 0);
+    }
+  }
+
+  filterInput?.addEventListener('input', applyFilter);
+
+  // Sorting
+  sortSelect?.addEventListener('change', () => {
+    const mode = sortSelect.value;
+    const itemsArr = Array.from(items);
+
+    itemsArr.sort((a, b) => {
+      const priceA = parseInt(a.getAttribute('data-price') || '0');
+      const priceB = parseInt(b.getAttribute('data-price') || '0');
+      const nameA = a.getAttribute('data-name') || '';
+      const nameB = b.getAttribute('data-name') || '';
+
+      if (mode === 'price-asc') return priceA - priceB;
+      if (mode === 'price-desc') return priceB - priceA;
+      if (mode === 'name-asc') return nameA.localeCompare(nameB);
+      return 0;
+    });
+
+    itemsArr.forEach((item) => gridContainer?.appendChild(item));
+  });
+</script>

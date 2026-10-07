@@ -1,0 +1,465 @@
+---
+// Layout.astro
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const { 
+  title = "Ciudad Sex Shop | Placer, Lencería y Bienestar Íntimo en Chile", 
+  description = "Descubre una cuidada selección de vibradores, lencería sensual, feromonas y bienestar íntimo. Despacho 100% discreto y confidencial a todo Chile.",
+  image = "/images/hero-banner.jpg"
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://ciudadsexshop.cl');
+---
+
+<!doctype html>
+<html lang="es" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/webp" href="/logo-ciudadsexshop.webp" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+
+  <body class="bg-[#080714] text-gray-100 min-h-screen flex flex-col selection:bg-pink-600 selection:text-white bg-ambient-lights">
+    
+    <Header />
+
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <!-- Cart Drawer (Off-canvas) -->
+    <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#100d26] border-l border-purple-500/30 z-50 translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+      <!-- Cart Header -->
+      <div class="p-6 border-b border-purple-900/40 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-purple-900/50 flex items-center justify-center text-pink-400">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Tu Carrito</h3>
+            <p class="text-xs text-purple-300/70">Despacho anónimo garantizado</p>
+          </div>
+        </div>
+        <button id="close-cart-btn" class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-purple-900/40 transition-colors">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Cart Items List -->
+      <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Cart Footer -->
+      <div class="p-6 border-t border-purple-900/40 bg-[#0c091d]">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-300">Total estimado:</span>
+          <span id="cart-total-amount" class="text-xl font-extrabold text-white">$0</span>
+        </div>
+        <a 
+          href="https://ciudadsexshop.cl/carrito/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full py-3.5 px-6 rounded-full text-center font-bold text-xs uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shadow-purple-600/30 block active:scale-95 transition-all"
+        >
+          Iniciar Compra Segura
+        </a>
+        <p class="text-[11px] text-center text-purple-300/60 mt-3 flex items-center justify-center gap-1.5">
+          🔒 Envío 100% privado y paquete sin rotular
+        </p>
+      </div>
+    </aside>
+
+    <!-- REAL-TIME SEARCH MODAL -->
+    <div id="search-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-start justify-center pt-16 sm:pt-20 px-4 transition-all">
+      <div class="glass-card w-full max-w-2xl rounded-3xl p-6 border border-purple-500/30 shadow-2xl bg-[#120e2e]/98 flex flex-col max-h-[85vh]">
+        
+        <!-- Search Header & Input -->
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="relative flex-grow">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Buscar por nombre, categoría o tipo (ej: vibrador, dildo, feromona)..." 
+              autocomplete="off"
+              class="w-full bg-[#18133a] border border-purple-500/40 rounded-2xl pl-12 pr-10 py-3.5 text-white placeholder-purple-300/40 focus:outline-none focus:border-pink-500 text-sm"
+            />
+            <button id="clear-search-btn" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white hidden p-1">
+              ✕
+            </button>
+          </div>
+          <button id="close-search-btn" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-purple-900/40 text-lg transition-colors" title="Cerrar (Esc)">
+            ✕
+          </button>
+        </div>
+
+        <!-- Quick Categories tags -->
+        <div class="flex items-center gap-2 text-xs pb-3 border-b border-purple-900/40 overflow-x-auto">
+          <span class="text-purple-300/60 flex-shrink-0">Filtros rápidos:</span>
+          <button type="button" class="search-tag px-2.5 py-1 rounded-full bg-purple-900/40 hover:bg-pink-600/30 text-purple-200 hover:text-white transition-colors flex-shrink-0" data-term="dildo">Dildos</button>
+          <button type="button" class="search-tag px-2.5 py-1 rounded-full bg-purple-900/40 hover:bg-pink-600/30 text-purple-200 hover:text-white transition-colors flex-shrink-0" data-term="vibrador">Vibradores</button>
+          <button type="button" class="search-tag px-2.5 py-1 rounded-full bg-purple-900/40 hover:bg-pink-600/30 text-purple-200 hover:text-white transition-colors flex-shrink-0" data-term="feromona">Feromonas</button>
+          <button type="button" class="search-tag px-2.5 py-1 rounded-full bg-purple-900/40 hover:bg-pink-600/30 text-purple-200 hover:text-white transition-colors flex-shrink-0" data-term="lubricante">Lubricantes</button>
+          <button type="button" class="search-tag px-2.5 py-1 rounded-full bg-purple-900/40 hover:bg-pink-600/30 text-purple-200 hover:text-white transition-colors flex-shrink-0" data-term="lencería">Lencería</button>
+        </div>
+
+        <!-- Real-time Results Counter & Container -->
+        <div class="py-2 flex items-center justify-between text-xs text-purple-300/70">
+          <span id="search-results-count">Escribe para buscar entre más de 200 productos</span>
+        </div>
+
+        <!-- Results List -->
+        <div id="search-results-list" class="flex-grow overflow-y-auto space-y-2.5 pr-1 min-h-[160px]">
+          <!-- Populated by JavaScript in real time -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+      <div class="glass-card px-5 py-3.5 rounded-2xl border border-pink-500/40 shadow-2xl flex items-center gap-3 bg-[#1b153b]/95">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+          ✓
+        </div>
+        <div>
+          <p id="toast-title" class="text-xs font-bold text-white">¡Producto añadido!</p>
+          <p id="toast-message" class="text-[11px] text-purple-200/80">Tu selección está en el carrito.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Client Scripts for Cart & Real-Time Search -->
+    <script is:inline>
+      const CART_STORAGE_KEY = 'ciudad_sexshop_cart';
+
+      function getCart() {
+        try {
+          return JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+        } catch {
+          return [];
+        }
+      }
+
+      function saveCart(cart) {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+        updateCartBadge();
+        renderCartItems();
+      }
+
+      function updateCartBadge() {
+        const cart = getCart();
+        const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+          badge.textContent = count.toString();
+          badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+      }
+
+      function showToast(title, message) {
+        const toast = document.getElementById('toast');
+        const tTitle = document.getElementById('toast-title');
+        const tMsg = document.getElementById('toast-message');
+        if (!toast) return;
+
+        if (tTitle && title) tTitle.textContent = title;
+        if (tMsg && message) tMsg.textContent = message;
+
+        toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        }, 3200);
+      }
+
+      function toggleCart(open) {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        if (!drawer || !backdrop) return;
+
+        if (open) {
+          drawer.classList.remove('translate-x-full');
+          backdrop.classList.remove('opacity-0', 'pointer-events-none');
+          backdrop.classList.add('opacity-100', 'pointer-events-auto');
+          renderCartItems();
+        } else {
+          drawer.classList.add('translate-x-full');
+          backdrop.classList.add('opacity-0', 'pointer-events-none');
+          backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+        }
+      }
+
+      function renderCartItems() {
+        const container = document.getElementById('cart-items-container');
+        const totalEl = document.getElementById('cart-total-amount');
+        if (!container) return;
+
+        const cart = getCart();
+        if (cart.length === 0) {
+          container.innerHTML = `
+            <div class="h-64 flex flex-col items-center justify-center text-center">
+              <span class="text-4xl mb-3">🛍️</span>
+              <p class="text-white font-medium text-sm">Tu carrito está vacío</p>
+              <p class="text-xs text-purple-300/60 mt-1">Explora nuestros productos y encuentra lo que deseas.</p>
+            </div>
+          `;
+          if (totalEl) totalEl.textContent = '$0';
+          return;
+        }
+
+        let totalCLP = 0;
+        container.innerHTML = cart.map((item, index) => {
+          const numericPrice = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+          totalCLP += numericPrice * (item.quantity || 1);
+
+          return `
+            <div class="flex items-center gap-3 p-3 rounded-2xl bg-[#171338] border border-purple-500/20">
+              <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-contain rounded-xl bg-[#0c0a1f] p-1.5" />
+              <div class="flex-grow min-w-0">
+                <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                <p class="text-xs text-pink-400 font-semibold mt-0.5">${item.price}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-[11px] text-gray-400">Cantidad: ${item.quantity || 1}</span>
+                </div>
+              </div>
+              <button onclick="removeFromCart(${index})" class="p-2 text-gray-400 hover:text-red-400 text-sm" title="Eliminar">
+                🗑️
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        if (totalEl) {
+          totalEl.textContent = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalCLP);
+        }
+      }
+
+      window.removeFromCart = function(index) {
+        const cart = getCart();
+        cart.splice(index, 1);
+        saveCart(cart);
+      };
+
+      // ================= REAL-TIME SEARCH LOGIC =================
+      let searchCatalog = [];
+      let isCatalogLoaded = false;
+
+      async function loadSearchCatalog() {
+        if (isCatalogLoaded) return;
+        try {
+          const res = await fetch('/search-index.json');
+          if (res.ok) {
+            searchCatalog = await res.json();
+            isCatalogLoaded = true;
+          }
+        } catch (e) {
+          console.warn('Could not load local search index:', e);
+        }
+      }
+
+      function formatPriceCLP(price) {
+        const num = parseInt(price) || 0;
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(num);
+      }
+
+      function performSearch(query) {
+        const trimmed = query.trim().toLowerCase();
+        const resultsContainer = document.getElementById('search-results-list');
+        const countEl = document.getElementById('search-results-count');
+        const clearBtn = document.getElementById('clear-search-btn');
+
+        if (clearBtn) {
+          clearBtn.style.display = trimmed.length > 0 ? 'block' : 'none';
+        }
+
+        if (!trimmed) {
+          if (countEl) countEl.textContent = 'Escribe para buscar entre más de 200 productos';
+          if (resultsContainer) {
+            resultsContainer.innerHTML = `
+              <div class="py-10 text-center text-purple-300/50 text-sm">
+                <span>Escribe el nombre de un juguete, accesorio o categoría</span>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        // Filter products in real time
+        const matches = searchCatalog.filter(p => {
+          return (p.name && p.name.toLowerCase().includes(trimmed)) ||
+                 (p.category && p.category.toLowerCase().includes(trimmed)) ||
+                 (p.slug && p.slug.toLowerCase().includes(trimmed));
+        });
+
+        if (countEl) {
+          countEl.textContent = matches.length === 1 
+            ? '1 producto encontrado' 
+            : `${matches.length} productos encontrados`;
+        }
+
+        if (matches.length === 0) {
+          resultsContainer.innerHTML = `
+            <div class="py-12 text-center">
+              <span class="text-3xl block mb-2">🔍</span>
+              <p class="text-white font-medium text-sm">No encontramos productos para "${query}"</p>
+              <p class="text-xs text-purple-300/60 mt-1">Prueba con palabras como "vibrador", "dildo", "aceite" o "feromona".</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Render matching products
+        resultsContainer.innerHTML = matches.slice(0, 15).map(item => {
+          const formatted = formatPriceCLP(item.price);
+          return `
+            <a href="/producto/${item.slug}" class="flex items-center gap-3.5 p-3 rounded-2xl bg-[#18133a] hover:bg-[#251d54] border border-purple-500/20 hover:border-pink-500/40 transition-all group">
+              <div class="w-14 h-14 rounded-xl bg-[#0e0b24] p-1.5 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="${item.image || '/images/cat-juguetes.jpg'}" alt="${item.name}" class="w-full h-full object-contain group-hover:scale-110 transition-transform" />
+              </div>
+              <div class="flex-grow min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="text-[10px] font-semibold text-pink-400 bg-pink-950/60 px-2 py-0.5 rounded-md border border-pink-500/20">${item.category || 'Producto'}</span>
+                </div>
+                <h4 class="text-xs font-bold text-white group-hover:text-pink-300 transition-colors truncate">${item.name}</h4>
+                <p class="text-xs font-black text-white mt-1">${formatted}</p>
+              </div>
+              <div class="text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all text-xs flex items-center gap-1 flex-shrink-0 pr-1">
+                <span>Ver</span>
+                <span>→</span>
+              </div>
+            </a>
+          `;
+        }).join('');
+      }
+
+      // Initialize global event listeners
+      document.addEventListener('DOMContentLoaded', () => {
+        updateCartBadge();
+        loadSearchCatalog();
+
+        // Cart triggers
+        document.getElementById('cart-btn')?.addEventListener('click', () => toggleCart(true));
+        document.getElementById('close-cart-btn')?.addEventListener('click', () => toggleCart(false));
+        document.getElementById('cart-drawer-backdrop')?.addEventListener('click', () => toggleCart(false));
+
+        // Search trigger
+        const searchModal = document.getElementById('search-modal');
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-search-btn');
+
+        function openSearch() {
+          searchModal?.classList.remove('hidden');
+          searchModal?.classList.add('flex');
+          loadSearchCatalog();
+          setTimeout(() => searchInput?.focus(), 50);
+          performSearch(searchInput?.value || '');
+        }
+
+        function closeSearch() {
+          searchModal?.classList.add('hidden');
+          searchModal?.classList.remove('flex');
+        }
+
+        document.getElementById('search-btn')?.addEventListener('click', openSearch);
+        document.getElementById('close-search-btn')?.addEventListener('click', closeSearch);
+        searchModal?.addEventListener('click', (e) => {
+          if (e.target === searchModal) closeSearch();
+        });
+
+        // Real-time input typing
+        searchInput?.addEventListener('input', (e) => {
+          performSearch(e.target.value);
+        });
+
+        clearBtn?.addEventListener('click', () => {
+          if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+            performSearch('');
+          }
+        });
+
+        // Search tag chips
+        document.querySelectorAll('.search-tag').forEach(tag => {
+          tag.addEventListener('click', () => {
+            const term = tag.getAttribute('data-term');
+            if (searchInput && term) {
+              searchInput.value = term;
+              performSearch(term);
+              searchInput.focus();
+            }
+          });
+        });
+
+        // Keyboard navigation
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeSearch();
+            toggleCart(false);
+          }
+        });
+
+        // Add to cart click event delegation
+        document.body.addEventListener('click', (e) => {
+          const btn = e.target.closest('.add-to-cart-btn');
+          if (btn) {
+            const id = btn.dataset.id;
+            const name = btn.dataset.name;
+            const price = btn.dataset.price;
+            const image = btn.dataset.image;
+            const slug = btn.dataset.slug;
+
+            const cart = getCart();
+            const existing = cart.find(i => i.id == id);
+            if (existing) {
+              existing.quantity = (existing.quantity || 1) + 1;
+            } else {
+              cart.push({ id, name, price, image, slug, quantity: 1 });
+            }
+
+            saveCart(cart);
+            showToast('¡Añadido al carrito!', name);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

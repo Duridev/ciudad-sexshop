@@ -1,0 +1,213 @@
+---
+// categoria/[slug].astro
+import Layout from '../../layouts/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import TrustBadges from '../../components/TrustBadges.astro';
+import { getAllProducts, getOfficialCategories, getCategories } from '../../lib/woocommerce';
+import type { WooCommerceProduct, WooCommerceCategory } from '../../types/woocommerce';
+
+export async function getStaticPaths() {
+  const categories = getOfficialCategories();
+  const allProducts = await getAllProducts();
+
+  return categories.map((cat) => {
+    // Match products by category slug, id or name
+    const catProducts = allProducts.filter((p) => {
+      if (!p.categories || p.categories.length === 0) return false;
+      return p.categories.some((c) => {
+        const cSlug = c.slug.toLowerCase();
+        const catSlug = cat.slug.toLowerCase();
+        return c.id === cat.id ||
+               cSlug === catSlug || 
+               cSlug.includes(catSlug) || 
+               catSlug.includes(cSlug) || 
+               c.name.toLowerCase() === cat.name.toLowerCase();
+      });
+    });
+
+    return {
+      params: { slug: cat.slug },
+      props: { 
+        category: {
+          ...cat,
+          count: catProducts.length,
+        }, 
+        products: catProducts,
+        allCategories: categories 
+      },
+    };
+  });
+}
+
+interface Props {
+  category?: WooCommerceCategory;
+  products?: WooCommerceProduct[];
+  allCategories?: WooCommerceCategory[];
+}
+
+const slug = (Astro.params.slug || '') as string;
+const allCategories = Astro.props.allCategories || getOfficialCategories();
+const category = Astro.props.category || allCategories.find((c) => c.slug === slug) || {
+  id: 0,
+  name: slug.toUpperCase(),
+  slug: slug,
+  link: `/categoria/${slug}`,
+  count: 0,
+};
+
+const allCatalog = await getAllProducts();
+const products: WooCommerceProduct[] = (Astro.props.products && Astro.props.products.length > 0)
+  ? Astro.props.products
+  : allCatalog.filter((p) => {
+      if (!p.categories || p.categories.length === 0) return false;
+      return p.categories.some((c) => {
+        const cSlug = c.slug.toLowerCase();
+        const catSlug = category.slug.toLowerCase();
+        return c.id === category.id ||
+               cSlug === catSlug ||
+               cSlug.includes(catSlug) ||
+               catSlug.includes(cSlug) ||
+               c.name.toLowerCase() === category.name.toLowerCase();
+      });
+    });
+
+// Category descriptive subtitle helper
+const descriptions: Record<string, string> = {
+  'dildos': 'Descubre nuestra selección de dildos y consoladores: silicona médica premium, diseños realistas, dobles y con ventosa.',
+  'vibradores': 'Explora vibradores con estimulación clitoridiana, punto G, tecnología rabbit y control inalámbrico.',
+  'feromonas': 'Fórmulas concentradas para despertar atracción, magnetismo y sensualidad sin o con aromas irresistibles.',
+  'lenceria': 'Conjuntos sensuales, babydolls, encajes y diseños sugerentes para encender la pasión.',
+  'lubricantes': 'Fórmulas a base de agua, silicona y sabores comestibles para mayor comodidad y placer.',
+  'dilatadores': 'Accesorios progresivos diseñados para exploración cómoda, segura y placentera.',
+  'accesorios': 'Todo lo necesario para tus encuentros íntimos: antifaces, esposas, anillos y más.',
+  'anal': 'Juguetes y estimuladores anatómicos diseñados para máxima suavidad y comodidad.',
+  'bdsm-bondage': 'Accesorios para juegos de rol, dominación, sumisión y experiencias sensoriales.',
+  'juegos': 'Juegos eróticos de cartas, dados y desafíos para disfrutar y conectar en pareja.',
+  'promociones': 'Ofertas destacadas y packs especiales con precios rebajados por tiempo limitado.',
+  'varios': 'Variedad de artículos complementarios para mejorar tu vida íntima.',
+};
+
+const categoryDesc = descriptions[category.slug] || `Encuentra los mejores productos de ${category.name} con despacho 100% confidencial a todo Chile.`;
+---
+
+<Layout 
+  title={`${category.name} | Ciudad Sex Shop Chile`}
+  description={categoryDesc}
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    
+    <!-- Breadcrumbs matching WooCommerce standard from codigo-fuente-seccion.txt -->
+    <nav class="flex items-center gap-2 text-xs text-purple-300/70 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-white transition-colors">Inicio</a>
+      <span>/</span>
+      <a href="/productos" class="hover:text-white transition-colors">Categorías</a>
+      <span>/</span>
+      <span class="text-gray-300 font-semibold">{category.name}</span>
+    </nav>
+
+    <!-- Category Header matching H1 & layout from codigo-fuente-seccion.txt -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-purple-900/40">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-500/30 text-pink-300 text-xs font-semibold mb-3">
+          <span>Sección Oficial</span>
+          <span>•</span>
+          <span>{products.length} {products.length === 1 ? 'producto' : 'productos'}</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+          {category.name}
+        </h1>
+        <p class="text-sm sm:text-base text-purple-200/70 font-light mt-2 max-w-2xl leading-relaxed">
+          {categoryDesc}
+        </p>
+      </div>
+
+      <!-- Sorting Selector -->
+      <div class="flex items-center gap-3">
+        <label for="category-sort" class="text-xs text-purple-300 font-medium">Ordenar por:</label>
+        <select 
+          id="category-sort" 
+          class="bg-[#171239] border border-purple-500/30 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+        >
+          <option value="default">Popularidad</option>
+          <option value="price-asc">Precio: Menor a Mayor</option>
+          <option value="price-desc">Precio: Mayor a Menor</option>
+          <option value="name-asc">Nombre: A - Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Related Category Navigation Pills -->
+    <div class="mb-10">
+      <div class="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
+        <a 
+          href="/productos"
+          class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap bg-[#17133a] hover:bg-purple-900/50 border border-purple-500/20 text-purple-200 hover:text-white transition-all"
+        >
+          ← Ver todos los productos
+        </a>
+        {allCategories.map((c) => (
+          <a 
+            href={`/categoria/${c.slug}`}
+            class={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${c.slug === category.slug ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-600/20' : 'bg-[#17133a] hover:bg-purple-900/50 border border-purple-500/20 text-purple-200 hover:text-white'}`}
+          >
+            {c.name} {c.count ? `(${c.count})` : ''}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    {products.length > 0 ? (
+      <div id="category-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <div class="cat-product-item" data-price={product.prices.price} data-name={product.name.toLowerCase()}>
+            <ProductCard product={product} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="py-16 text-center glass-card rounded-3xl p-10 max-w-xl mx-auto border border-purple-500/20">
+        <span class="text-4xl block mb-3">📦</span>
+        <h3 class="text-xl font-bold text-white mb-2">Próximamente más productos</h3>
+        <p class="text-xs sm:text-sm text-purple-200/70 mb-6">
+          Estamos actualizando el inventario de la sección de {category.name}. Revisa nuestro catálogo completo.
+        </p>
+        <a 
+          href="/productos" 
+          class="inline-flex items-center justify-center px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg"
+        >
+          Explorar todos los productos
+        </a>
+      </div>
+    )}
+
+  </div>
+
+  <TrustBadges />
+</Layout>
+
+<script>
+  // Dynamic sorting for category products
+  const sortSelect = document.getElementById('category-sort') as HTMLSelectElement;
+  const grid = document.getElementById('category-products-grid');
+  const items = document.querySelectorAll('.cat-product-item');
+
+  sortSelect?.addEventListener('change', () => {
+    const mode = sortSelect.value;
+    const itemsArr = Array.from(items);
+
+    itemsArr.sort((a, b) => {
+      const priceA = parseInt(a.getAttribute('data-price') || '0');
+      const priceB = parseInt(b.getAttribute('data-price') || '0');
+      const nameA = a.getAttribute('data-name') || '';
+      const nameB = b.getAttribute('data-name') || '';
+
+      if (mode === 'price-asc') return priceA - priceB;
+      if (mode === 'price-desc') return priceB - priceA;
+      if (mode === 'name-asc') return nameA.localeCompare(nameB);
+      return 0;
+    });
+
+    itemsArr.forEach((item) => grid?.appendChild(item));
+  });
+</script>

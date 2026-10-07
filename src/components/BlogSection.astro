@@ -1,0 +1,100 @@
+---
+// BlogSection.astro
+const articles = [
+  {
+    title: '¿Cómo elegir tu primer juguete?',
+    snippet: 'Consejos esenciales para principiantes: materiales seguros, formas y cómo empezar con total confianza.',
+    image: '/images/blog-juguete.jpg',
+    readTime: '4 min lectura',
+    tag: 'Guía Principiantes'
+  },
+  {
+    title: 'Mitos sobre la intimidad y el placer',
+    snippet: 'Derribando falsas creencias comunes para vivir una sexualidad sana, libre de culpas y enriquecedora.',
+    image: '/images/blog-pareja.jpg',
+    readTime: '5 min lectura',
+    tag: 'Bienestar'
+  },
+  {
+    title: 'El poder invisible de las feromonas',
+    snippet: 'Descubre cómo funciona la atracción química natural y las mejores zonas de aplicación para prolongar su efecto.',
+    image: '/images/hero-banner.jpg',
+    readTime: '3 min lectura',
+    tag: 'Seducción'
+  },
+  {
+    title: 'Juegos en pareja: Redescubre la pasión',
+    snippet: 'Ideas y dinámicas creativas para romper la rutina y explorar nuevas sensaciones juntos.',
+    image: '/images/cat-parejas.jpg',
+    readTime: '6 min lectura',
+    tag: 'En Pareja'
+  }
+];
+---
+
+<section id="educacion" class="py-16 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header matching mockup -->
+    <div class="text-center mb-12">
+      <span class="text-xs uppercase tracking-widest text-purple-300 font-semibold">Comunidad y Bienestar</span>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1 tracking-tight">
+        Educación y Placer
+      </h2>
+      <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 rounded-full"></div>
+    </div>
+
+    <!-- 2x2 Grid matching mockup -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {articles.map((item) => (
+        <article class="glass-card rounded-3xl overflow-hidden group border border-purple-500/20 hover:border-pink-500/40 transition-all duration-300">
+          <div class="relative h-56 sm:h-64 overflow-hidden">
+            <img 
+              src={item.image} 
+              alt={item.title}
+              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0e0b24] via-transparent to-transparent"></div>
+            
+            <div class="absolute top-4 left-4 flex gap-2">
+              <span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-purple-950/80 text-pink-300 border border-purple-500/30 backdrop-blur-md">
+                {item.tag}
+              </span>
+            </div>
+            
+            <span class="absolute bottom-4 right-4 text-[11px] text-gray-300 backdrop-blur-md bg-black/40 px-2.5 py-1 rounded-full border border-white/10">
+              {item.readTime}
+            </span>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-white group-hover:text-pink-300 transition-colors mb-2 leading-snug">
+              {item.title}
+            </h3>
+            <p class="text-sm text-purple-200/70 font-light leading-relaxed line-clamp-2">
+              {item.snippet}
+            </p>
+            <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-pink-400 group-hover:text-pink-300 transition-colors">
+              <span>Leer artículo</span>
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <!-- Center CTA Pill Button matching mockup -->
+    <div class="mt-12 text-center">
+      <a 
+        href="#blog"
+        class="inline-flex items-center justify-center px-10 py-3.5 text-sm font-semibold uppercase tracking-wider text-white rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 shadow-xl shadow-purple-600/30 hover:shadow-purple-500/50 hover:scale-105 active:scale-95 transition-all duration-200"
+      >
+        Leer el Blog
+      </a>
+    </div>
+
+  </div>
+</section>

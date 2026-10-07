@@ -1,0 +1,52 @@
+---
+// BestSellers.astro
+import type { WooCommerceProduct } from '../types/woocommerce';
+import ProductCard from './ProductCard.astro';
+
+interface Props {
+  products: WooCommerceProduct[];
+}
+
+const { products } = Astro.props;
+---
+
+<section id="mas-vendidos" class="py-16 relative">
+  <!-- Subtle neon background glow -->
+  <div class="absolute top-1/2 right-10 w-[450px] h-[350px] bg-purple-700/10 blur-[140px] rounded-full pointer-events-none -z-10"></div>
+  <div class="absolute bottom-10 left-10 w-[350px] h-[250px] bg-pink-600/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Section Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+      <div>
+        <span class="text-xs uppercase tracking-widest text-pink-400 font-bold">Favoritos de la Comunidad</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1 tracking-tight">
+          Más Vendidos
+        </h2>
+        <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mt-3 rounded-full"></div>
+      </div>
+
+      <!-- Live badge -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/20 text-purple-200 text-xs self-start sm:self-end">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Conectado a WooCommerce Live</span>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {products.map((product) => (
+        <ProductCard product={product} />
+      ))}
+    </div>
+
+    <!-- Dots Pagination (As shown in mockup) -->
+    <div class="flex items-center justify-center gap-2 mt-12">
+      <button class="w-6 h-2 rounded-full bg-pink-500 transition-all"></button>
+      <button class="w-2 h-2 rounded-full bg-purple-900 hover:bg-purple-700 transition-all"></button>
+      <button class="w-2 h-2 rounded-full bg-purple-900 hover:bg-purple-700 transition-all"></button>
+    </div>
+
+  </div>
+</section>

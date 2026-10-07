@@ -1,0 +1,146 @@
+---
+// CategoryGrid.astro
+const categories = [
+  {
+    title: 'Dildos & Consoladores',
+    subtitle: 'Silicona médica, realistas, dobles & con ventosa',
+    image: '/images/cat-juguetes.jpg',
+    href: '/categoria/dildos',
+    tag: '32 Productos',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-pink-500/25',
+    borderColor: 'border-pink-500/30'
+  },
+  {
+    title: 'Vibradores',
+    subtitle: 'Rabbit, estimuladores de punto G & succionadores',
+    image: '/images/cat-juguetes.jpg',
+    href: '/categoria/vibradores',
+    tag: '35 Productos',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-purple-500/25',
+    borderColor: 'border-purple-500/30'
+  },
+  {
+    title: 'Lencería Sensual',
+    subtitle: 'Conjuntos, babydolls, encajes & antifaces',
+    image: '/images/cat-lenceria.jpg',
+    href: '/categoria/lenceria',
+    tag: '31 Productos',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-purple-500/25',
+    borderColor: 'border-purple-500/30'
+  },
+  {
+    title: 'Lubricantes & Aceites',
+    subtitle: 'Base agua, comestibles de sabores & masajes',
+    image: '/images/cat-bienestar.jpg',
+    href: '/categoria/lubricantes',
+    tag: '26 Productos',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-indigo-500/25',
+    borderColor: 'border-indigo-500/30'
+  },
+  {
+    title: 'BDSM & Bondage',
+    subtitle: 'Esposas, antifaces, látigos, plumas & sets',
+    image: '/images/cat-bdsm.jpg',
+    href: '/categoria/bdsm-bondage',
+    tag: '31 Productos',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-rose-500/25',
+    borderColor: 'border-rose-500/30'
+  },
+  {
+    title: 'Feromonas de Seducción',
+    subtitle: 'Fórmulas concentradas masculinas y femeninas',
+    image: '/images/hero-banner.jpg',
+    href: '/categoria/feromonas',
+    tag: 'Atracción Pura',
+    colSpan: 'col-span-12 md:col-span-6',
+    glowColor: 'hover:shadow-amber-500/25',
+    borderColor: 'border-amber-500/30'
+  },
+  {
+    title: 'Juegos & Placer en Pareja',
+    subtitle: 'Cartas, retos, aceites térmicos y diversión compartida',
+    image: '/images/cat-parejas.jpg',
+    href: '/categoria/juegos',
+    tag: 'Conexión Profunda',
+    colSpan: 'col-span-12',
+    isWide: true,
+    glowColor: 'hover:shadow-fuchsia-500/25',
+    borderColor: 'border-fuchsia-500/30'
+  }
+];
+---
+
+<section id="categorias" class="py-16 relative">
+  <!-- Section Title -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center">
+    <span class="text-xs uppercase tracking-widest text-pink-400 font-bold">Colecciones Oficiales</span>
+    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1 tracking-tight">
+      Explora por Categorías
+    </h2>
+    <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 rounded-full"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-12 gap-6">
+      {categories.map((cat) => (
+        <div class={`${cat.colSpan} group relative rounded-3xl overflow-hidden border ${cat.borderColor} bg-[#110e28] shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl ${cat.glowColor}`}>
+          
+          <a href={cat.href} class="block relative w-full h-[220px] sm:h-[260px] overflow-hidden">
+            <!-- Background Image -->
+            <img 
+              src={cat.image} 
+              alt={cat.title}
+              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
+              loading="lazy"
+            />
+
+            <!-- Dark Gradient Vignette for Text Contrast -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0a071c] via-[#0a071c]/40 to-transparent"></div>
+
+            <!-- Content Overlay positioned at bottom left -->
+            <div class="absolute inset-x-0 bottom-0 p-6 flex flex-col justify-end">
+              <span class="inline-block w-fit px-2.5 py-1 rounded-md bg-purple-950/70 border border-purple-500/30 text-[11px] font-semibold text-purple-200 mb-2">
+                {cat.tag}
+              </span>
+              <div class="flex items-end justify-between">
+                <div>
+                  <h3 class="text-2xl sm:text-3xl font-bold text-white tracking-tight group-hover:text-pink-300 transition-colors">
+                    {cat.title}
+                  </h3>
+                  <p class="text-xs sm:text-sm text-purple-200/80 font-light mt-0.5 line-clamp-1">
+                    {cat.subtitle}
+                  </p>
+                </div>
+                
+                <!-- Arrow Pill -->
+                <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:bg-pink-600 group-hover:border-pink-500 transition-all duration-300 flex-shrink-0 group-hover:translate-x-1">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      ))}
+    </div>
+
+    <!-- View All Products CTA Link -->
+    <div class="mt-12 text-center">
+      <a 
+        href="/productos" 
+        class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-pink-300 hover:text-white bg-purple-950/60 hover:bg-pink-600/30 border border-pink-500/30 hover:border-pink-500 transition-all shadow-md"
+      >
+        <span>Ver catálogo completo con todos los productos</span>
+        <span>→</span>
+      </a>
+    </div>
+
+  </div>
+</section>

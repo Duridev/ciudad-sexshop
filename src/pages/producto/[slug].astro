@@ -1,0 +1,465 @@
+---
+// producto/[slug].astro
+import Layout from '../../layouts/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import TrustBadges from '../../components/TrustBadges.astro';
+import { getAllProducts, getProductBySlug, formatCLP, stripHtml } from '../../lib/woocommerce';
+import type { WooCommerceProduct } from '../../types/woocommerce';
+
+// Pre-render static paths for all WooCommerce products
+export async function getStaticPaths() {
+  const products = await getAllProducts();
+  return products.map((product) => {
+    // Pick related products from the same category
+    const related = products
+      .filter((p) => p.id !== product.id && p.categories?.some((c) => product.categories?.some((pc) => pc.id === c.id || pc.slug === c.slug)))
+      .slice(0, 4);
+
+    return {
+      params: { slug: product.slug },
+      props: { product, related },
+    };
+  });
+}
+
+interface Props {
+  product?: WooCommerceProduct;
+  related?: WooCommerceProduct[];
+}
+
+const { slug } = Astro.params;
+const allCatalog = await getAllProducts();
+const product: WooCommerceProduct | null = Astro.props.product || allCatalog.find((p) => p.slug === slug) || await getProductBySlug(slug as string);
+
+if (!product) {
+  return Astro.redirect('/productos');
+}
+
+// Related items from props or fallback from same category
+const relatedProducts: WooCommerceProduct[] = Astro.props.related || 
+  allCatalog
+    .filter((p) => p.id !== product.id && p.categories?.some((c) => product.categories?.some((pc) => pc.id === c.id || pc.slug === c.slug)))
+    .slice(0, 4);
+
+
+const primaryCategory = product.categories?.[0]?.name || 'Productos';
+const priceFormatted = formatCLP(product.prices?.price || '0', product.prices?.currency_minor_unit || 0);
+const regularPriceFormatted = product.prices?.regular_price && product.prices.regular_price !== product.prices.price
+  ? formatCLP(product.prices.regular_price, product.prices.currency_minor_unit || 0)
+  : null;
+
+const images = product.images && product.images.length > 0 
+  ? product.images 
+  : [{ id: 0, src: '/images/cat-juguetes.jpg', thumbnail: '/images/cat-juguetes.jpg', name: product.name }];
+
+const mainImage = images[0].src;
+const plainDescription = stripHtml(product.short_description || product.description || '');
+---
+
+<Layout 
+  title={`${product.name} | Ciudad Sex Shop Chile`}
+  description={plainDescription.slice(0, 160)}
+  image={mainImage}
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    
+    <!-- Breadcrumb Navigation -->
+    <nav class="flex items-center gap-2 text-xs text-purple-300/70 mb-8" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-white transition-colors">Inicio</a>
+      <span>/</span>
+      <a href="/#categorias" class="hover:text-white transition-colors">{primaryCategory}</a>
+      <span>/</span>
+      <span class="text-gray-300 truncate max-w-xs">{product.name}</span>
+    </nav>
+
+    <!-- Product Main Grid (Gallery + Details) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+      
+      <!-- Left Column: Gallery (5 cols) -->
+      <div class="lg:col-span-6 flex flex-col gap-4">
+        <!-- Main Image Display with Pedestal Glow -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-purple-500/20 shadow-2xl flex items-center justify-center min-h-[380px] sm:min-h-[460px] bg-gradient-to-b from-[#161235] to-[#0f0c24]">
+          <!-- Ambient glowing pedestal effect -->
+          <div class="absolute bottom-6 w-3/4 h-12 bg-purple-500/20 blur-xl rounded-full pointer-events-none"></div>
+          
+          <img 
+            id="main-product-image"
+            src={mainImage} 
+            alt={product.name} 
+            class="max-h-[380px] sm:max-h-[440px] w-auto max-w-full object-contain transition-all duration-300 drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)]"
+          />
+
+          <!-- Discreet Badge -->
+          <div class="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-950/80 border border-purple-500/30 text-purple-200 backdrop-blur-md">
+            <span>🔒 Empaque Discreto</span>
+          </div>
+
+          {regularPriceFormatted && (
+            <div class="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-lg">
+              Oferta Especial
+            </div>
+          )}
+        </div>
+
+        <!-- Thumbnails Gallery -->
+        {images.length > 1 && (
+          <div class="flex items-center gap-3 overflow-x-auto pb-2">
+            {images.map((img, idx) => (
+              <button 
+                type="button"
+                class={`thumbnail-btn w-20 h-20 rounded-2xl p-2 glass-card border transition-all flex-shrink-0 ${idx === 0 ? 'border-pink-500 ring-2 ring-pink-500/40' : 'border-purple-500/20 opacity-70 hover:opacity-100'}`}
+                data-src={img.src}
+              >
+                <img src={img.src} alt={img.name || product.name} class="w-full h-full object-contain" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Right Column: Product Info & Actions (7 cols) -->
+      <div class="lg:col-span-6 flex flex-col justify-between">
+        <div>
+          <!-- Category & Stock Status -->
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-xs uppercase tracking-widest font-bold text-pink-400">
+              {primaryCategory}
+            </span>
+            <span class="text-gray-500">•</span>
+            <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              En Stock para envío inmediato
+            </span>
+          </div>
+
+          <!-- Product Title -->
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-snug mb-4">
+            {product.name}
+          </h1>
+
+          <!-- Reviews / Ratings -->
+          <div class="flex items-center gap-2 mb-6">
+            <div class="flex text-amber-400 text-sm">
+              ★★★★★
+            </div>
+            <span class="text-sm font-semibold text-white">5.0</span>
+            <span class="text-xs text-purple-300/70">(48 valoraciones verificadas)</span>
+          </div>
+
+          <!-- Price Display -->
+          <div class="glass-card p-5 rounded-2xl border border-purple-500/20 mb-6 flex items-baseline gap-4">
+            <span class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              {priceFormatted}
+            </span>
+            {regularPriceFormatted && (
+              <div class="flex items-center gap-2">
+                <span class="text-base text-gray-400 line-through">
+                  {regularPriceFormatted}
+                </span>
+                <span class="text-xs font-bold text-pink-400 bg-pink-950/60 px-2.5 py-0.5 rounded-full border border-pink-500/30">
+                  Descuento Exclusivo
+                </span>
+              </div>
+            )}
+          </div>
+
+          <!-- Short Description -->
+          {product.short_description && (
+            <div class="prose prose-invert prose-purple text-sm text-purple-200/80 leading-relaxed mb-6 font-light">
+              <div set:html={product.short_description} />
+            </div>
+          )}
+
+          <!-- Discreet Packaging Assurance Box -->
+          <div class="glass-panel p-4 rounded-2xl border border-purple-500/30 mb-8 bg-[#120e2e]/70 flex items-start gap-3.5">
+            <div class="w-9 h-9 rounded-xl bg-purple-900/50 flex items-center justify-center text-lg flex-shrink-0 text-pink-400">
+              📦
+            </div>
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-white">
+                Garantía de Privacidad 100% Total
+              </h4>
+              <p class="text-xs text-purple-200/70 mt-0.5 leading-relaxed">
+                Tu pedido se entrega en caja sellada neutra sin ningún distintivo ni nombre de tienda. Máxima confidencialidad.
+              </p>
+            </div>
+          </div>
+
+          <!-- Purchase Controls (Quantity + Actions) -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <!-- Quantity selector -->
+              <div class="flex items-center rounded-2xl border border-purple-500/30 bg-[#161233] p-1">
+                <button 
+                  id="qty-minus"
+                  type="button"
+                  class="w-10 h-10 rounded-xl text-gray-300 hover:text-white hover:bg-purple-900/40 flex items-center justify-center font-bold text-lg transition-colors"
+                >
+                  -
+                </button>
+                <input 
+                  type="number" 
+                  id="product-qty" 
+                  value="1" 
+                  min="1" 
+                  max="99" 
+                  class="w-12 text-center bg-transparent text-white font-bold text-sm focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button 
+                  id="qty-plus"
+                  type="button"
+                  class="w-10 h-10 rounded-xl text-gray-300 hover:text-white hover:bg-purple-900/40 flex items-center justify-center font-bold text-lg transition-colors"
+                >
+                  +
+                </button>
+              </div>
+
+              <!-- Add to Cart Pill Button -->
+              <button 
+                id="detail-add-to-cart"
+                type="button"
+                class="flex-grow py-3.5 px-6 rounded-full font-bold text-sm uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:to-pink-500 shadow-xl shadow-purple-600/30 hover:shadow-purple-500/50 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+                data-id={product.id}
+                data-name={product.name}
+                data-price={priceFormatted}
+                data-image={mainImage}
+                data-slug={product.slug}
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span>Añadir al Carrito</span>
+              </button>
+            </div>
+
+            <!-- Direct Buy / Checkout Button -->
+            <a 
+              href={`https://ciudadsexshop.cl/carrito/?add-to-cart=${product.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-full py-3.5 px-6 rounded-full text-center font-bold text-xs uppercase tracking-wider text-purple-200 hover:text-white bg-[#1b153b] hover:bg-purple-900/50 border border-purple-500/30 transition-all block"
+            >
+              Comprar Ahora en Tienda Oficial ↗
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Product Description Tabs Section -->
+    <div class="mt-16 pt-12 border-t border-purple-900/30">
+      
+      <!-- Tab Controls -->
+      <div class="flex items-center gap-3 border-b border-purple-900/40 pb-4 overflow-x-auto">
+        <button 
+          id="tab-desc-btn" 
+          class="tab-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-md"
+          data-target="tab-desc"
+        >
+          Descripción Completa
+        </button>
+        <button 
+          id="tab-specs-btn" 
+          class="tab-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-purple-300 hover:text-white bg-purple-950/40 border border-purple-500/20"
+          data-target="tab-specs"
+        >
+          Características & Cuidado
+        </button>
+        <button 
+          id="tab-shipping-btn" 
+          class="tab-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-purple-300 hover:text-white bg-purple-950/40 border border-purple-500/20"
+          data-target="tab-shipping"
+        >
+          Envíos & Privacidad
+        </button>
+      </div>
+
+      <!-- Tab Content Panels -->
+      <div class="mt-8">
+        
+        <!-- Tab 1: Full Description from WooCommerce -->
+        <div id="tab-desc" class="tab-panel glass-card p-6 sm:p-10 rounded-3xl border border-purple-500/20">
+          <div class="prose prose-invert prose-purple max-w-none text-purple-100/90 leading-relaxed font-light space-y-4">
+            {product.description ? (
+              <div set:html={product.description} />
+            ) : (
+              <p>Este producto no cuenta con descripción adicional disponible en este momento.</p>
+            )}
+          </div>
+        </div>
+
+        <!-- Tab 2: Specs & Care -->
+        <div id="tab-specs" class="tab-panel glass-card p-6 sm:p-10 rounded-3xl border border-purple-500/20 hidden">
+          <h3 class="text-lg font-bold text-white mb-4">Recomendaciones de uso y materiales</h3>
+          <ul class="space-y-3 text-sm text-purple-200/80">
+            <li class="flex items-center gap-2">
+              <span class="text-pink-400">✓</span> Material hipoalergénico y seguro para el cuerpo (Body-safe).
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-pink-400">✓</span> Lavar con agua tibia y jabón neutro o limpiador antibacteriano especializado antes y después de cada uso.
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-pink-400">✓</span> Almacenar en lugar seco, fresco y lejos de la luz solar directa.
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-pink-400">✓</span> Usar exclusivamente con lubricantes compatibles (base de agua).
+            </li>
+          </ul>
+        </div>
+
+        <!-- Tab 3: Shipping & Privacy -->
+        <div id="tab-shipping" class="tab-panel glass-card p-6 sm:p-10 rounded-3xl border border-purple-500/20 hidden">
+          <h3 class="text-lg font-bold text-white mb-4">Política de Confidencialidad y Despacho</h3>
+          <p class="text-sm text-purple-200/80 leading-relaxed mb-4">
+            En Ciudad Sex Shop garantizamos absoluta privacidad en cada etapa de tu compra.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-purple-200/90">
+            <div class="p-4 rounded-2xl bg-[#141030] border border-purple-500/20">
+              <h5 class="font-bold text-white mb-1">📦 Empaque 100% Ciego</h5>
+              <p>Caja café o sobre opaco sin logos, sin imágenes y sin remitente explícito.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#141030] border border-purple-500/20">
+              <h5 class="font-bold text-white mb-1">💳 Extracto Bancario Discreto</h5>
+              <p>En tu tarjeta o cuenta aparecerá un nombre comercial genérico no relacionado al rubro.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Related Products -->
+    {relatedProducts.length > 0 && (
+      <div class="mt-20">
+        <div class="mb-8">
+          <span class="text-xs uppercase tracking-widest text-pink-400 font-bold">También te podría gustar</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
+            Productos Relacionados
+          </h2>
+          <div class="w-12 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mt-2 rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {relatedProducts.map((relProduct) => (
+            <ProductCard product={relProduct} />
+          ))}
+        </div>
+      </div>
+    )}
+
+  </div>
+
+  <TrustBadges />
+</Layout>
+
+<script>
+  // Image thumbnail switcher
+  const mainImg = document.getElementById('main-product-image') as HTMLImageElement;
+  const thumbBtns = document.querySelectorAll('.thumbnail-btn');
+
+  thumbBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const src = btn.getAttribute('data-src');
+      if (src && mainImg) {
+        mainImg.src = src;
+        thumbBtns.forEach((b) => {
+          b.classList.remove('border-pink-500', 'ring-2', 'ring-pink-500/40');
+          b.classList.add('border-purple-500/20', 'opacity-70');
+        });
+        btn.classList.remove('border-purple-500/20', 'opacity-70');
+        btn.classList.add('border-pink-500', 'ring-2', 'ring-pink-500/40');
+      }
+    });
+  });
+
+  // Quantity controls
+  const qtyInput = document.getElementById('product-qty') as HTMLInputElement;
+  const btnMinus = document.getElementById('qty-minus');
+  const btnPlus = document.getElementById('qty-plus');
+
+  btnMinus?.addEventListener('click', () => {
+    if (qtyInput) {
+      const current = parseInt(qtyInput.value) || 1;
+      if (current > 1) qtyInput.value = (current - 1).toString();
+    }
+  });
+
+  btnPlus?.addEventListener('click', () => {
+    if (qtyInput) {
+      const current = parseInt(qtyInput.value) || 1;
+      qtyInput.value = (current + 1).toString();
+    }
+  });
+
+  // Tabs switcher
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      
+      tabBtns.forEach((b) => {
+        b.className = 'tab-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-purple-300 hover:text-white bg-purple-950/40 border border-purple-500/20';
+      });
+      btn.className = 'tab-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-md';
+
+      tabPanels.forEach((panel) => {
+        if (panel.id === targetId) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // Detail Add to Cart Button handler
+  const detailAddBtn = document.getElementById('detail-add-to-cart');
+  detailAddBtn?.addEventListener('click', () => {
+    const id = detailAddBtn.dataset.id;
+    const name = detailAddBtn.dataset.name;
+    const price = detailAddBtn.dataset.price;
+    const image = detailAddBtn.dataset.image;
+    const slug = detailAddBtn.dataset.slug;
+    const qty = parseInt(qtyInput?.value || '1') || 1;
+
+    try {
+      const cart = JSON.parse(localStorage.getItem('ciudad_sexshop_cart') || '[]');
+      const existing = cart.find((i: any) => i.id == id);
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + qty;
+      } else {
+        cart.push({ id, name, price, image, slug, quantity: qty });
+      }
+      localStorage.setItem('ciudad_sexshop_cart', JSON.stringify(cart));
+      
+      // Update badge
+      const count = cart.reduce((total: number, item: any) => total + (item.quantity || 1), 0);
+      const badge = document.getElementById('cart-badge');
+      if (badge) {
+        badge.textContent = count.toString();
+        badge.style.display = 'flex';
+      }
+
+      // Show toast
+      const toast = document.getElementById('toast');
+      const tTitle = document.getElementById('toast-title');
+      const tMsg = document.getElementById('toast-message');
+      if (toast) {
+        if (tTitle) tTitle.textContent = '¡Añadido al carrito!';
+        if (tMsg) tMsg.textContent = `${qty}x ${name}`;
+        toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        }, 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+</script>

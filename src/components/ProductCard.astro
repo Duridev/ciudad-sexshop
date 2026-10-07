@@ -1,0 +1,107 @@
+---
+// ProductCard.astro
+import type { WooCommerceProduct } from '../types/woocommerce';
+import { formatCLP } from '../lib/woocommerce';
+
+interface Props {
+  product: WooCommerceProduct;
+}
+
+const { product } = Astro.props;
+
+// Pick image
+const imageUrl = product.images && product.images.length > 0 
+  ? product.images[0].src 
+  : '/images/cat-juguetes.jpg';
+
+const priceFormatted = formatCLP(product.prices?.price || '0', product.prices?.currency_minor_unit || 0);
+const regularPriceFormatted = product.prices?.regular_price && product.prices.regular_price !== product.prices.price
+  ? formatCLP(product.prices.regular_price, product.prices.currency_minor_unit || 0)
+  : null;
+
+const productUrl = `/producto/${product.slug}`;
+---
+
+<div class="glass-card rounded-2xl p-4 flex flex-col justify-between group relative overflow-hidden border border-purple-500/15 hover:border-pink-500/40 transition-all duration-300">
+  
+  <!-- Top Badges -->
+  <div class="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
+    {product.on_sale || regularPriceFormatted ? (
+      <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md">
+        Oferta
+      </span>
+    ) : (
+      <span class="px-2.5 py-1 rounded-full text-[10px] font-medium tracking-wide bg-purple-950/80 text-purple-200 border border-purple-500/30 backdrop-blur-md">
+        {product.categories?.[0]?.name || 'Destacado'}
+      </span>
+    )}
+
+    <span class="w-7 h-7 rounded-full bg-purple-900/60 backdrop-blur-md border border-purple-400/20 flex items-center justify-center text-xs text-purple-200" title="Discreto">
+      🔒
+    </span>
+  </div>
+
+  <!-- Image Container with Pedestal Aesthetic -->
+  <a href={productUrl} class="block relative w-full pt-[100%] rounded-xl overflow-hidden bg-gradient-to-b from-[#120f2b]/60 to-[#19153a]/90 group-hover:from-[#171336] group-hover:to-[#221c4e] transition-colors mb-4">
+    <!-- Center glow pedestal -->
+    <div class="absolute inset-x-8 bottom-3 h-8 bg-purple-500/20 blur-md rounded-full pointer-events-none"></div>
+
+    <img 
+      src={imageUrl} 
+      alt={product.name} 
+      class="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-108 transition-transform duration-500 ease-out drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)]"
+      loading="lazy"
+    />
+  </a>
+
+  <!-- Content -->
+  <div class="flex flex-col flex-grow justify-between">
+    <div>
+      <!-- Rating Stars -->
+      <div class="flex items-center gap-1 mb-1.5">
+        <div class="flex text-amber-400 text-xs">
+          ★★★★★
+        </div>
+        <span class="text-[11px] text-gray-400 font-medium">(5.0)</span>
+      </div>
+
+      <!-- Title with Link -->
+      <a href={productUrl} class="block focus:outline-none">
+        <h3 class="text-sm font-semibold text-white group-hover:text-pink-300 transition-colors line-clamp-2 leading-snug">
+          {product.name}
+        </h3>
+      </a>
+    </div>
+
+    <!-- Price and Add to Cart Action -->
+    <div class="mt-4 pt-3 border-t border-purple-900/30 flex items-center justify-between gap-2">
+      <div class="flex flex-col">
+        {regularPriceFormatted && (
+          <span class="text-[11px] text-gray-400 line-through">
+            {regularPriceFormatted}
+          </span>
+        )}
+        <span class="text-base sm:text-lg font-bold text-white tracking-tight">
+          {priceFormatted}
+        </span>
+      </div>
+
+      <!-- Add to Cart Pill Button -->
+      <button 
+        type="button"
+        class="add-to-cart-btn px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#221c48] hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 border border-purple-500/30 hover:border-pink-500/50 shadow-sm active:scale-95 transition-all duration-200 flex items-center gap-1.5"
+        data-id={product.id}
+        data-name={product.name}
+        data-price={priceFormatted}
+        data-image={imageUrl}
+        data-slug={product.slug}
+      >
+        <span>Añadir</span>
+        <svg class="w-3.5 h-3.5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>
